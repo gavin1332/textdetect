@@ -29,7 +29,7 @@ extern bool SHOW_FINAL_;
 bool PRINT_LOG_ = true;
 bool SPLIT_TEXT_RECT_ = !true;
 bool SHOW_GROUP_STEP_ = !true;
-bool SHOW_EXTREMAL_RESPONSE_ = !true;
+bool SHOW_EXTREMAL_RESPONSE_ = true;
 bool SHOW_GROUPED_RESULT_ = true;
 bool SHOW_FINAL_ = true;
 
@@ -76,6 +76,10 @@ void ReleaseList(list<TextRect*>* trlist) {
 	trlist->clear();
 }
 
+void PrintProgress(int count, int size) {
+  cout << "Progress:" << (float) count*100/size << "%" << endl;
+}
+
 #if 1
 
 int main(int argc, char** argv) {
@@ -91,16 +95,15 @@ int main(int argc, char** argv) {
   Evaluator evaluator;
   vector<string>::iterator it = filename_vec.begin();
   int count = 1;
+  const int file_count_total = filename_vec.size();
 
   double exec_time = (double) getTickCount();
   for (; it != filename_vec.end(); ++it, ++count) {
-//    if (it->compare("390.jpg") < 0) continue;
-    if (it->compare("188.jpg") < 0) continue; // 225 236
-//    if (it->compare("398.jpg") < 0) continue; // 225 236
+    if (it->compare("124.jpg") < 0) continue;
 
     const string img_path = data_dir + "/" + *it;
     TestUtils::Print(img_path);
-    cout << "Progress:" << (float) count*100/filename_vec.size() << "%" << endl;
+    PrintProgress(count, file_count_total);
 
     Mat img = imread(img_path, CV_LOAD_IMAGE_COLOR);
 

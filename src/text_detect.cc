@@ -33,6 +33,7 @@ void TextDetector::Detect(const Mat& img, list<TextRect*>* trlist) {
 	cxt.img = img;
 
 	cvtColor(img, cxt.gray, CV_BGR2GRAY);
+	TestUtils::ShowImage(cxt.gray);
 
 	Stroke stroke;
 	stroke.Extract(cxt.gray, cxt.level_map);
