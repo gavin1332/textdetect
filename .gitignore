@@ -1,6 +1,7 @@
-/.cproject
-/.gitignore
-/.project
 /Debug
 /Release
-/.settings
+/build/
+/dist/
+/.dep.inc
+/Makefile
+/nbproject
