@@ -45,6 +45,7 @@ for i = 1:N
   end
   i
   gauss = conv2(gauss, kernel, 'same');
+% add normalization according to manniesing06
   dx = diff(gauss, 1, 2);
   dy = diff(gauss, 1, 1);
   dxx = diff(dx, 1, 2);
