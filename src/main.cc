@@ -162,7 +162,7 @@ int main(int argc, char** argv) {
 
 int main() {
   const string base_dir = "/home/liuyi/project/cpp/testdata/scene/2011";
-  const string img_path = base_dir + "/test-textloc-gt/test-textloc-gt/153.jpg";
+  const string img_path = base_dir + "/test-textloc-gt/test-textloc-gt/170.jpg";
   Mat img = imread(img_path, CV_LOAD_IMAGE_COLOR);
   Frangi98 detector;
   list<TextRect*> result;

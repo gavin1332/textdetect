@@ -16,57 +16,52 @@ void Frangi98::Detect(const cv::Mat& img, std::list<TextRect*>* trlist) {
 	cxt.img = img;
 
 	cvtColor(img, cxt.gray, CV_BGR2GRAY);
-  
-  Mat output;
-  DoSomething(cxt.gray, &output);
 
-//	cxt.polarity = POS;
-//	HandleOnePolarity(&cxt, trlist);
+	cxt.polarity = POS;
+	HandleOnePolarity(cxt.gray, trlist);
 //	cxt.polarity = NEG;
 //	HandleOnePolarity(&cxt, trlist);
 //
 //  if (SHOW_FINAL_) DispRects(cxt.img, *trlist, Scalar(255, 255, 255));
 }
 
-void Frangi98::HandleOnePolarity(Context* cxt, std::list<TextRect*>* trlist) {
-  
-}
-
-void Frangi98::DoSomething(const Mat& gray, Mat* output) {
+void Frangi98::HandleOnePolarity(const Mat& gray, std::list<TextRect*>* trlist) {
   const int width = gray.cols;
   const int height = gray.rows;
-  
+  TestUtils::ShowImage(gray);
   Mat fgray;
   gray.convertTo(fgray, CV_64FC1);
   
-  // TODO: check proper initial parameters
-  const int init_w = 3;
+  const double init_w = 3;
   const double k_sigma = sqrt(2);
-  float sigma = init_w / (2 * sqrt(3));
-  float delta_sigma = sigma;
+  double sigma = init_w / 2 / sqrt(3.0);
+  double delta_sigma = sigma;
   Mat gauss = fgray;
-  const int N = 2;
+  const int N = 1;
   const double beta = 0.5;
-  // TODO: tune
-  const double gamma = 20;
+  // TODO: need to tune, sensitive
+  const double gamma = 25;
+  // TODO: ksize can significantly affect the result
+  const int ksize = 3;
+  // refers to the document of getDerivKernels: the coefficients should have 
+  // the denominator= pow(2.0, ksize*2-dx-dy-2)
+  const double normal = 1 / pow(2.0, (double) ksize*2 - 4);
   double lambda[2];
   Mat dxx, dyy, dxy;
   Mat hessian(2, 2, CV_64FC1);
   Mat inner(gray.size(), CV_64FC1, 0.0);
   Mat result(gray.size(), CV_64FC1, 0.0);
-  Mat mask8U(gray.size(), CV_8UC1);
-  Mat mask64F(gray.size(), CV_64FC1);
   double max_S_checker = 0;
   for (int i = 0; i < N; ++i) {
+    cout << "i: " << i << endl;
     if (delta_sigma < 1.0) {
       GaussianBlur(fgray, gauss, Size(0, 0), sigma);
     } else {
       GaussianBlur(gauss, gauss, Size(0, 0), delta_sigma);
     }
-    // TODO: tune ksize
-    Sobel(gauss, dxx, CV_64F, 2, 0, 1, 1/*TODO normalize*/, 0, BORDER_REPLICATE);
-    Sobel(gauss, dyy, CV_64F, 0, 2, 1, 1/*TODO normalize*/, 0, BORDER_REPLICATE);
-    Sobel(gauss, dxy, CV_64F, 1, 1, 3, 1/*TODO normalize*/, 0, BORDER_REPLICATE);
+    Sobel(gauss, dxx, CV_64F, 2, 0, ksize, normal, 0, BORDER_REPLICATE);
+    Sobel(gauss, dyy, CV_64F, 0, 2, ksize, normal, 0, BORDER_REPLICATE);
+    Sobel(gauss, dxy, CV_64F, 1, 1, ksize, normal, 0, BORDER_REPLICATE);
     for (int y = 0; y < height; ++y) {
       double* dxx_ptr = dxx.ptr<double>(y);
       double* dyy_ptr = dyy.ptr<double>(y);
@@ -77,6 +72,7 @@ void Frangi98::DoSomething(const Mat& gray, Mat* output) {
         hessian.at<double>(0, 1) = dxy_ptr[x];
         hessian.at<double>(1, 0) = dxy_ptr[x];
         hessian.at<double>(1, 1) = dyy_ptr[x];
+        // normalization
         hessian *= sigma * sigma;
 
         Mat eival, eivec;
@@ -89,31 +85,23 @@ void Frangi98::DoSomething(const Mat& gray, Mat* output) {
         }
 
         // TODO: polarity
+        double Rb = lambda[1] / lambda[0];
+        double S = sqrt(lambda[0]*lambda[0] + lambda[1]*lambda[1]);
+        if (max_S_checker < S) max_S_checker = S;
         if (lambda[0] >= 0) {
-          inner_ptr[x] = 0;
+          inner_ptr[x] = 0;//-exp(-pow(Rb/beta, 2.0)/2) * (1 - exp(-pow((S/gamma), 2.0))/2);
         } else {
-          double Rb = lambda[1] / lambda[0];
-          double S = sqrt(lambda[0]*lambda[0] + lambda[1]*lambda[1]);
-          if (max_S_checker < S) max_S_checker = S;
           inner_ptr[x] = exp(-pow(Rb/beta, 2.0)/2) * (1 - exp(-pow((S/gamma), 2.0))/2);
         }
       }
     }
-    if (i == 0) {
-      result = inner;
-    } else if (i == 1) {
-      mask8U = inner > result;
-      TestUtils::ShowImage(mask8U);
-      mask8U.convertTo(mask64F, CV_64FC1);
-      result = inner.mul(mask64F);
-    } else {
-      result = max(result, inner);
-    }    
+    result = max(result, inner);
     delta_sigma = sigma * (k_sigma - 1);
     sigma *= k_sigma;
   }
-  Mat haha;
-  normalize(result, haha, 0, 255, NORM_MINMAX, CV_8U);
-  TestUtils::ShowImage(haha);
+  Mat output;
+  normalize(result, output, 0, 255, NORM_MINMAX, CV_8U);
+  TestUtils::ShowImage(output);
+  TestUtils::ShowImage(output > 135); // 不知道为什么阈值设为135和125差别碰巧会很大
   TestUtils::Log("max S", max_S_checker);
 }

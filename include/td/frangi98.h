@@ -21,9 +21,7 @@ private:
     Polarity polarity;
   } Context;
   
-  void DoSomething(const cv::Mat& gray, cv::Mat* output);
-  
-  void HandleOnePolarity(Context* cxt, std::list<TextRect*>* trlist);
+  void HandleOnePolarity(const cv::Mat& gray, std::list<TextRect*>* trlist);
   
   Frangi98(const Frangi98&);
   void operator=(const Frangi98&);
