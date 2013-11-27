@@ -5,7 +5,7 @@
  *      Author: liuyi
  */
 
-#include "td/text_detect.h"
+#include "td/stroke-filter.h"
 
 #include <sys/stat.h>
 
@@ -19,14 +19,14 @@
 using namespace std;
 using namespace cv;
 
-const uchar TextDetector::kFG = 255;
-const uchar TextDetector::kBG = 0;
-const uchar TextDetector::kInvalid = 100;
-const uchar TextDetector::kMark = 1;
+const uchar StrokeFilter::kFG = 255;
+const uchar StrokeFilter::kBG = 0;
+const uchar StrokeFilter::kInvalid = 100;
+const uchar StrokeFilter::kMark = 1;
 
-const float TextDetector::kFloatEps = 0.000001;
+const float StrokeFilter::kFloatEps = 0.000001;
 
-void TextDetector::Detect(const Mat& img, list<TextRect*>* trlist) {
+void StrokeFilter::Detect(const Mat& img, list<TextRect*>* trlist) {
 	extern bool SHOW_FINAL_;
 
   Context cxt;
@@ -49,7 +49,7 @@ void TextDetector::Detect(const Mat& img, list<TextRect*>* trlist) {
   if (SHOW_FINAL_) DispRects(cxt.img, *trlist, Scalar(255, 255, 255));
 }
 
-void TextDetector::HandleOnePolarity(Context* cxt, list<TextRect*>* trlist) {
+void StrokeFilter::HandleOnePolarity(Context* cxt, list<TextRect*>* trlist) {
 	extern bool SHOW_GROUPED_RESULT_;
 
 //	RemoveNoise(cxt);
@@ -88,7 +88,7 @@ void TextDetector::HandleOnePolarity(Context* cxt, list<TextRect*>* trlist) {
 	trlist->splice(trlist->end(), tmplist);
 }
 
-void TextDetector::CheckCCValidation(Context* cxt, vector<Region*>* region_pool) {
+void StrokeFilter::CheckCCValidation(Context* cxt, vector<Region*>* region_pool) {
 	RegionItr it = region_pool->begin(), end = region_pool->end();
 	for (; it != end; ++it) {
 		ConnComp* cc = static_cast<ConnComp*>(*it);
@@ -101,7 +101,7 @@ void TextDetector::CheckCCValidation(Context* cxt, vector<Region*>* region_pool)
 	}
 }
 
-void TextDetector::CheckParentCC(Context* cxt, vector<Region*>* region_pool) {
+void StrokeFilter::CheckParentCC(Context* cxt, vector<Region*>* region_pool) {
 	RegionItr it = region_pool->begin(), last = region_pool->end() - 1;
 	for (; it != last; ++it) {
 		ConnComp* cc = static_cast<ConnComp*>(*it);
@@ -150,14 +150,14 @@ void TextDetector::CheckParentCC(Context* cxt, vector<Region*>* region_pool) {
 	}
 }
 
-void TextDetector::CheckCCRelation(Context* cxt, vector<Region*>* region_pool) {
+void StrokeFilter::CheckCCRelation(Context* cxt, vector<Region*>* region_pool) {
 	CheckParentCC(cxt, region_pool);
 //	ShowValidCCs(cxt, region_pool->begin(), region_pool->end());
 
 	CheckAncestorCC(cxt, region_pool);
 }
 
-void TextDetector::CheckAncestorCC(Context* cxt, vector<Region*>* region_pool) {
+void StrokeFilter::CheckAncestorCC(Context* cxt, vector<Region*>* region_pool) {
 	RegionItr it = region_pool->begin(), last = region_pool->end() - 1;
 	for (it = region_pool->begin(); it != last; ++it) {
 		ConnComp* cc = static_cast<ConnComp*>(*it);
@@ -179,7 +179,7 @@ void TextDetector::CheckAncestorCC(Context* cxt, vector<Region*>* region_pool) {
 	}
 }
 
-void TextDetector::RemoveNoise(Context* cxt) {
+void StrokeFilter::RemoveNoise(Context* cxt) {
 	Mat* level_map = cxt->CurrLevelMap();
 	Mat mask = *level_map > 0;
 
@@ -201,13 +201,13 @@ void TextDetector::RemoveNoise(Context* cxt) {
 	*level_map = (mask > 0) & *level_map;
 }
 
-void TextDetector::ShowValidCCs(Context* cxt, RegionItr begin, RegionItr end) {
+void StrokeFilter::ShowValidCCs(Context* cxt, RegionItr begin, RegionItr end) {
 	Mat map;
 	BuildMapWithValidCCs(cxt, &map, begin, end);
 	TestUtils::ShowImage(map * 60);
 }
 
-void TextDetector::BuildMapWithValidCCs(Context* cxt, Mat* map,
+void StrokeFilter::BuildMapWithValidCCs(Context* cxt, Mat* map,
 		RegionItr begin, RegionItr end) {
 	*map = Mat::zeros(cxt->gray.size(), CV_8UC1);
 	vector<Region*>::reverse_iterator rit(end), rend(begin);
@@ -223,7 +223,7 @@ void TextDetector::BuildMapWithValidCCs(Context* cxt, Mat* map,
 	}
 }
 
-void TextDetector::GroupRegion(Context* cxt, vector<Region*>* region_vec,
+void StrokeFilter::GroupRegion(Context* cxt, vector<Region*>* region_vec,
 		list<TextRect*>* trlist) {
 	extern bool SHOW_GROUP_STEP_;
 
@@ -295,7 +295,7 @@ void TextDetector::GroupRegion(Context* cxt, vector<Region*>* region_vec,
 	}
 }
 
-bool TextDetector::CheckHorizon(const TextRect* tr, const ConnComp* region) {
+bool StrokeFilter::CheckHorizon(const TextRect* tr, const ConnComp* region) {
   int my1, my2;
   tr->MedianY12(&my1, &my2);
   int mh = my2 - my1;
@@ -318,17 +318,7 @@ bool TextDetector::CheckHorizon(const TextRect* tr, const ConnComp* region) {
   return false;
 }
 
-void TextDetector::DispRects(const Mat& gray, const list<TextRect*>& trlist,
-    Scalar color) {
-  vector<Rect> rect_vec;
-  list<TextRect*>::const_iterator itr = trlist.begin(), end = trlist.end();
-  for (; itr != end; ++itr) {
-    rect_vec.push_back((*itr)->ToCvRect());
-  }
-  TestUtils::ShowRects(gray, rect_vec, color);
-}
-
-void TextDetector::OverlapAnalyse(list<TextRect*>* trlist) {
+void StrokeFilter::OverlapAnalyse(list<TextRect*>* trlist) {
   int inner_x1, inner_y1, inner_x2, inner_y2;
   list<TextRect*>::iterator it = trlist->begin();
   while (it != trlist->end()) {
@@ -373,7 +363,7 @@ void TextDetector::OverlapAnalyse(list<TextRect*>* trlist) {
   }
 }
 
-void TextDetector::Refine(Context* cxt, list<TextRect*>* trlist) {
+void StrokeFilter::Refine(Context* cxt, list<TextRect*>* trlist) {
   list<TextRect*>::iterator it = trlist->begin();
   while (it != trlist->end()) {
   	TextRect* tr = *it;
@@ -422,7 +412,7 @@ void TextDetector::Refine(Context* cxt, list<TextRect*>* trlist) {
 }
 
 
-void TextDetector::Split(list<TextRect*>* trlist) {
+void StrokeFilter::Split(list<TextRect*>* trlist) {
   list<TextRect*>::iterator it = trlist->begin();
   while (it != trlist->end()) {
     int sub_rect_num = (*it)->CharNum();
@@ -485,7 +475,7 @@ void TextDetector::Split(list<TextRect*>* trlist) {
   }
 }
 
-void TextDetector::SaveRegionTree(const string& dir_path, Region* root) {
+void StrokeFilter::SaveRegionTree(const string& dir_path, Region* root) {
 	static int count = 0;
 
 	mkdir(dir_path.c_str(), 0755);

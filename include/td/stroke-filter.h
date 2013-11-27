@@ -15,11 +15,15 @@
 #include <opencv2/core/core.hpp>
 
 #include "core/core.h"
+#include "td/text-detect.h"
 #include "utils/math/math.h"
 
-class TextDetector {
+class StrokeFilter : public TextDetector {
  public:
-	static void Detect(const cv::Mat& img, std::list<TextRect*>* rect_list);
+  StrokeFilter() {}
+  virtual ~StrokeFilter() {}
+  
+	void Detect(const cv::Mat& img, std::list<TextRect*>* trlist);
 
  private:
   typedef std::vector<Region*>::iterator RegionItr;
@@ -90,9 +94,6 @@ class TextDetector {
   static void BuildMapWithValidCCs(Context* cxt, cv::Mat* map,
   		RegionItr begin, RegionItr end);
 
-  static void DispRects(const cv::Mat& gray, const std::list<TextRect*>& trlist,
-      cv::Scalar color = cv::Scalar(255, 255, 255));
-
   static void SaveRegionTree(const std::string& dir_path, Region* root);
 
 //  void MarkCC(std::list<Region>* cclist);
@@ -105,8 +106,6 @@ class TextDetector {
 //  static void TuneRect(std::list<TextRect>* trlist);
 //
 //  static void RestoreSize(std::list<TextRect>* trlist, float scale);
-
-  TextDetector();
 
 };
 

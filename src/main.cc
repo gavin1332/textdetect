@@ -10,11 +10,12 @@
 #include "core/core.h"
 #include "evaluate/evaluate.h"
 #include "evaluate/icdar2011.h"
-#include "td/text_detect.h"
+#include "td/stroke-filter.h"
 #include "utils/common/common.h"
 #include "utils/image/image.h"
 #include "utils/image/mser.h"
 #include "utils/test/test.h"
+#include "td/frangi98.h"
 
 using namespace std;
 using namespace cv;
@@ -80,7 +81,7 @@ void PrintProgress(int count, int size) {
   cout << "Progress:" << (float) count*100/size << "%" << endl;
 }
 
-#if 1
+#if 0
 
 int main(int argc, char** argv) {
   const string base_dir = "/home/liuyi/project/cpp/testdata/scene/2011";
@@ -97,6 +98,7 @@ int main(int argc, char** argv) {
   int count = 1;
   const int file_count_total = filename_vec.size();
 
+  StrokeFilter detector;
   double exec_time = (double) getTickCount();
   for (; it != filename_vec.end(); ++it, ++count) {
     if (it->compare("124.jpg") < 0) continue;
@@ -126,7 +128,7 @@ int main(int argc, char** argv) {
     list<TextRect*> T_list;
     list<TextRect*> E_list;
     icdar2011.RetrieveTList(img_path, &T_list);
-    TextDetector::Detect(img, &E_list);
+    detector.Detect(img, &E_list);
     if (zoom < 1) {
     	list<TextRect*>::iterator it = E_list.begin(), end = E_list.end();
     	for (; it != end; ++it) {
@@ -156,6 +158,26 @@ int main(int argc, char** argv) {
   return EXIT_SUCCESS;
 }
 
+#elif 1
+
+int main() {
+  const string base_dir = "/home/liuyi/project/cpp/testdata/scene/2011";
+  const string img_path = base_dir + "/test-textloc-gt/test-textloc-gt/153.jpg";
+  Mat img = imread(img_path, CV_LOAD_IMAGE_COLOR);
+  Frangi98 detector;
+  list<TextRect*> result;
+  detector.Detect(img, &result);
+  return 0;
+}
+
 #else
+
+int main() {
+  Mat a(3, 4, CV_64FC1, 0.0);
+  Mat b(3, 4, CV_64FC1, 1.0);
+  Mat c = b > a;
+  cout << c << endl;
+  return 0;
+}
 
 #endif
