@@ -45,7 +45,7 @@ void Frangi98::DoSomething(const Mat& gray, Mat* output) {
   float sigma = init_w / (2 * sqrt(3));
   float delta_sigma = sigma;
   Mat gauss = fgray;
-  const int N = 3;
+  const int N = 2;
   const double beta = 0.5;
   // TODO: tune
   const double gamma = 20;
@@ -54,7 +54,8 @@ void Frangi98::DoSomething(const Mat& gray, Mat* output) {
   Mat hessian(2, 2, CV_64FC1);
   Mat inner(gray.size(), CV_64FC1, 0.0);
   Mat result(gray.size(), CV_64FC1, 0.0);
-  Mat mask(gray.size(), CV_64FC1);
+  Mat mask8U(gray.size(), CV_8UC1);
+  Mat mask64F(gray.size(), CV_64FC1);
   double max_S_checker = 0;
   for (int i = 0; i < N; ++i) {
     if (delta_sigma < 1.0) {
@@ -88,19 +89,23 @@ void Frangi98::DoSomething(const Mat& gray, Mat* output) {
         }
 
         // TODO: polarity
-        if (lambda[0] >= 0) continue;
-
-        double Rb = lambda[1] / lambda[0];
-        double S = sqrt(lambda[0]*lambda[0] + lambda[1]*lambda[1]);
-        if (max_S_checker < S) max_S_checker = S;
-        inner_ptr[x] = exp(-pow(Rb/beta, 2.0)/2) * (1 - exp(-pow((S/gamma), 2.0))/2);
+        if (lambda[0] >= 0) {
+          inner_ptr[x] = 0;
+        } else {
+          double Rb = lambda[1] / lambda[0];
+          double S = sqrt(lambda[0]*lambda[0] + lambda[1]*lambda[1]);
+          if (max_S_checker < S) max_S_checker = S;
+          inner_ptr[x] = exp(-pow(Rb/beta, 2.0)/2) * (1 - exp(-pow((S/gamma), 2.0))/2);
+        }
       }
     }
-    if (i == 1) {
+    if (i == 0) {
       result = inner;
-    } else if (i == 2) {
-      mask = cv::convertTo()inner > result;
-      result = inner.mul(mask);
+    } else if (i == 1) {
+      mask8U = inner > result;
+      TestUtils::ShowImage(mask8U);
+      mask8U.convertTo(mask64F, CV_64FC1);
+      result = inner.mul(mask64F);
     } else {
       result = max(result, inner);
     }    
