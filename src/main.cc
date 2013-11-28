@@ -162,7 +162,7 @@ int main(int argc, char** argv) {
 
 int main() {
   const string base_dir = "/home/liuyi/project/cpp/testdata/scene/2011";
-  const string img_path = base_dir + "/test-textloc-gt/test-textloc-gt/170.jpg";
+  const string img_path = base_dir + "/test-textloc-gt/test-textloc-gt/101.jpg";
   Mat img = imread(img_path, CV_LOAD_IMAGE_COLOR);
   Frangi98 detector;
   list<TextRect*> result;
@@ -173,10 +173,17 @@ int main() {
 #else
 
 int main() {
-  Mat a(3, 4, CV_64FC1, 0.0);
-  Mat b(3, 4, CV_64FC1, 1.0);
-  Mat c = b > a;
-  cout << c << endl;
+  const string base_dir = "/home/liuyi/project/cpp/testdata/scene/2011";
+  const string img_path = base_dir + "/test-textloc-gt/test-textloc-gt/107.jpg";
+  Mat gray = imread(img_path, CV_LOAD_IMAGE_GRAYSCALE);
+  double sigma1 = 2;
+  double sigma2 = 5;
+  Mat gauss;
+  GaussianBlur(gray, gauss, Size(19, 19), sigma1);
+  GaussianBlur(gauss, gauss, Size(19, 19), sigma2-sigma1+1);
+  TestUtils::ShowImage(gauss);
+  GaussianBlur(gray, gauss, Size(0, 0), sigma2);
+  TestUtils::ShowImage(gauss);
   return 0;
 }
 

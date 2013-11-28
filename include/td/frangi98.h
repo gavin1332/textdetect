@@ -14,14 +14,11 @@ public:
   
 	void Detect(const cv::Mat& img, std::list<TextRect*>* trlist);
   
-private:
-  typedef struct context {
-    cv::Mat img;
-    cv::Mat gray;
-    Polarity polarity;
-  } Context;
-  
+private:  
   void HandleOnePolarity(const cv::Mat& gray, std::list<TextRect*>* trlist);
+  
+  void GroupRegion(const cv::Mat& binary, std::vector<Region*>* region_vec,
+  		std::list<TextRect*>* trlist);
   
   Frangi98(const Frangi98&);
   void operator=(const Frangi98&);
