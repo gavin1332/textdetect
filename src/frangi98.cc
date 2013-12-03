@@ -9,6 +9,8 @@
 using namespace std;
 using namespace cv;
 
+const double Frangi98::EPSILON = 0.0000001;
+
 void Frangi98::Detect(const cv::Mat& img, std::list<TextRect*>* trlist) {
 	extern bool SHOW_FINAL_;
 
@@ -16,26 +18,26 @@ void Frangi98::Detect(const cv::Mat& img, std::list<TextRect*>* trlist) {
 	cvtColor(img, gray, CV_BGR2GRAY);
 //  resize(gray, gray, Size(0, 0), 0.5, 0.5);
 
-	HandleOnePolarity(gray, trlist);
+	Handle(gray, trlist);
 //	cxt.polarity = NEG;
 //	HandleOnePolarity(&cxt, trlist);
 //
 //  if (SHOW_FINAL_) DispRects(cxt.img, *trlist, Scalar(255, 255, 255));
 }
 
-void Frangi98::HandleOnePolarity(const Mat& gray, std::list<TextRect*>* trlist) {
+void Frangi98::Handle(const Mat& gray, std::list<TextRect*>* trlist) {
   const int width = gray.cols;
   const int height = gray.rows;
   TestUtils::ShowImage(gray);
   Mat fgray;
   gray.convertTo(fgray, CV_64FC1);
   
-  const double init_w = 10;
+  const double init_w = 3;
   const double k_sigma = sqrt(2);
   double sigma = init_w / 2 / sqrt(3.0);
   double delta_sigma = sigma;
   Mat gauss = fgray;
-  const int N = 6;
+  const int N = 12;
 //  const double beta = 0.5;
 //  // TODO: need to tune, sensitive
 //  const double gamma = 25;
@@ -50,8 +52,8 @@ void Frangi98::HandleOnePolarity(const Mat& gray, std::list<TextRect*>* trlist) 
   Mat inner(gray.size(), CV_64FC1, 0.0);
   Mat result[2], mask[2];
   for (int i = 0; i < 2; ++i) {
-    result[i] = Mat::zeros(gray.size(), CV_64FC1);
-    mask[i] = Mat::zeros(gray.size(), CV_64FC1);
+    result[i] = Mat::zeros(gray.size(), CV_8UC1);
+    mask[i] = Mat::ones(gray.size(), CV_8UC1) * 255;
   }
   double max_S_checker = 0;
   for (int i = 0; i < N; ++i) {
@@ -101,17 +103,16 @@ void Frangi98::HandleOnePolarity(const Mat& gray, std::list<TextRect*>* trlist) 
         inner_ptr[x] = (Rb > Rb_thres || S < S_thres)? 0 : lambda[0];
       }
     }
-    result[POS] = min(result[POS], inner);
-    result[POS].copyTo(mask[NEG]);
-    result[NEG] = max(result[NEG], inner);
-    result[NEG].copyTo(mask[POS]);
+    result[POS] |= (inner < -EPSILON) & mask[POS];
+    mask[NEG] &= 255 - result[POS];
+    result[NEG] |= (inner > EPSILON) & mask[NEG];
+    mask[POS] &= 255 - result[NEG];
+    
     delta_sigma = sigma * (k_sigma - 1);
     sigma *= k_sigma;
   }
-//  normalize(result, output, 0, 255, NORM_MINMAX, CV_8U);
-  const double epsilon = 0.0000001;
-  TestUtils::ShowImage(result[POS] < -epsilon);
-  TestUtils::ShowImage(result[NEG] > epsilon);
+  TestUtils::ShowImage(result[POS]);
+  TestUtils::ShowImage(result[NEG]);
 //  TestUtils::ShowImage(output > 135); // 不知道为什么阈值设为135和125差别碰巧会很大
   TestUtils::Log("max S", max_S_checker);
 }

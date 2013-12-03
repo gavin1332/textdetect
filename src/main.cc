@@ -81,7 +81,7 @@ void PrintProgress(int count, int size) {
   cout << "Progress:" << (float) count*100/size << "%" << endl;
 }
 
-#if 0
+#if 1
 
 int main(int argc, char** argv) {
   const string base_dir = "/home/liuyi/project/cpp/testdata/scene/2011";
@@ -98,10 +98,10 @@ int main(int argc, char** argv) {
   int count = 1;
   const int file_count_total = filename_vec.size();
 
-  StrokeFilter detector;
+  Frangi98 detector;
   double exec_time = (double) getTickCount();
   for (; it != filename_vec.end(); ++it, ++count) {
-    if (it->compare("124.jpg") < 0) continue;
+    if (it->compare("357.jpg") != 0) continue;
 
     const string img_path = data_dir + "/" + *it;
     TestUtils::Print(img_path);
@@ -162,7 +162,7 @@ int main(int argc, char** argv) {
 
 int main() {
   const string base_dir = "/home/liuyi/project/cpp/testdata/scene/2011";
-  const string img_path = base_dir + "/test-textloc-gt/test-textloc-gt/101.jpg";
+  const string img_path = base_dir + "/test-textloc-gt/test-textloc-gt/123.jpg";
   Mat img = imread(img_path, CV_LOAD_IMAGE_COLOR);
   Frangi98 detector;
   list<TextRect*> result;
@@ -173,17 +173,10 @@ int main() {
 #else
 
 int main() {
-  const string base_dir = "/home/liuyi/project/cpp/testdata/scene/2011";
-  const string img_path = base_dir + "/test-textloc-gt/test-textloc-gt/107.jpg";
-  Mat gray = imread(img_path, CV_LOAD_IMAGE_GRAYSCALE);
-  double sigma1 = 2;
-  double sigma2 = 5;
-  Mat gauss;
-  GaussianBlur(gray, gauss, Size(19, 19), sigma1);
-  GaussianBlur(gauss, gauss, Size(19, 19), sigma2-sigma1+1);
-  TestUtils::ShowImage(gauss);
-  GaussianBlur(gray, gauss, Size(0, 0), sigma2);
-  TestUtils::ShowImage(gauss);
+  Mat a = Mat::zeros(3, 3, CV_64FC1);
+  Mat b = Mat::ones(3, 3, CV_8UC1);
+  Mat c = a > b;
+  cout << c << endl;
   return 0;
 }
 

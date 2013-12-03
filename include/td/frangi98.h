@@ -14,8 +14,10 @@ public:
   
 	void Detect(const cv::Mat& img, std::list<TextRect*>* trlist);
   
-private:  
-  void HandleOnePolarity(const cv::Mat& gray, std::list<TextRect*>* trlist);
+private:
+  static const double EPSILON;
+  
+  void Handle(const cv::Mat& gray, std::list<TextRect*>* trlist);
   
   void GroupRegion(const cv::Mat& binary, std::vector<Region*>* region_vec,
   		std::list<TextRect*>* trlist);
