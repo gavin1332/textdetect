@@ -15,6 +15,7 @@
 #include "utils/image/image.h"
 #include "utils/image/mser.h"
 #include "utils/test/test.h"
+#include "td/liuyi13.h"
 #include "td/frangi98.h"
 
 using namespace std;
@@ -98,10 +99,11 @@ int main(int argc, char** argv) {
   int count = 1;
   const int file_count_total = filename_vec.size();
 
-  Frangi98 detector;
+//  Frangi98 detector;
+  LiuYi13 detector;
   double exec_time = (double) getTickCount();
   for (; it != filename_vec.end(); ++it, ++count) {
-    if (it->compare("357.jpg") != 0) continue;
+    if (it->compare("127.jpg") < 0) continue;
 
     const string img_path = data_dir + "/" + *it;
     TestUtils::Print(img_path);
@@ -158,7 +160,7 @@ int main(int argc, char** argv) {
   return EXIT_SUCCESS;
 }
 
-#elif 1
+#elif !1
 
 int main() {
   const string base_dir = "/home/liuyi/project/cpp/testdata/scene/2011";
@@ -173,10 +175,13 @@ int main() {
 #else
 
 int main() {
-  Mat a = Mat::zeros(3, 3, CV_64FC1);
-  Mat b = Mat::ones(3, 3, CV_8UC1);
-  Mat c = a > b;
-  cout << c << endl;
+  Mat a = Mat::ones(3, 3, CV_64FC1);
+  Mat mask = Mat::ones(3, 3, CV_8UC1);
+  mask.at<uchar>(1, 1) = 0;
+  cout << a << endl;
+  Mat b;
+  a.copyTo(a, mask);
+  cout << a << endl;
   return 0;
 }
 
