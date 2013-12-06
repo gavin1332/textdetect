@@ -14,9 +14,9 @@
 #include <opencv2/imgproc/imgproc.hpp>
 
 #include "td/stroke.h"
-#include "utils/common/common.h"
-#include "utils/math/math.h"
-#include "utils/test/test.h"
+#include "common/common.h"
+#include "math/math.h"
+#include "test/test.h"
 
 using namespace std;
 using namespace cv;

@@ -16,7 +16,7 @@
 
 #include "core/core.h"
 #include "td/text-detect.h"
-#include "utils/math/math.h"
+#include "math/math.h"
 
 class StrokeFilter : public TextDetector {
  public:

@@ -10,9 +10,9 @@
 #include <opencv2/highgui/highgui.hpp>
 
 #include "evaluate/evaluate.h"
-#include "utils/common/common.h"
-#include "utils/xml/tinyxml.h"
-#include "utils/test/test.h"
+#include "common/common.h"
+#include "xml/tinyxml.h"
+#include "test/test.h"
 
 using namespace std;
 using namespace cv;

@@ -15,8 +15,8 @@
 
 #include <opencv2/core/core.hpp>
 
-#include "utils/svm/interface.h"
-#include "utils/image/mser.h"
+#include "svm/interface.h"
+#include "image/mser.h"
 
 enum Polarity { POS = 0, NEG = 1 };
 

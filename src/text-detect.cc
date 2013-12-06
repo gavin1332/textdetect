@@ -1,6 +1,6 @@
 #include "td/text-detect.h"
 
-#include "utils/test/test.h"
+#include "test/test.h"
 
 using namespace std;
 using namespace cv;

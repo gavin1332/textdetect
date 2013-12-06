@@ -11,12 +11,10 @@
 #include "evaluate/evaluate.h"
 #include "evaluate/icdar2011.h"
 #include "td/stroke-filter.h"
-#include "utils/common/common.h"
-#include "utils/image/image.h"
-#include "utils/image/mser.h"
-#include "utils/test/test.h"
-#include "td/liuyi13.h"
-#include "td/frangi98.h"
+#include "common/common.h"
+#include "image/image.h"
+#include "image/mser.h"
+#include "test/test.h"
 
 using namespace std;
 using namespace cv;
@@ -99,8 +97,7 @@ int main(int argc, char** argv) {
   int count = 1;
   const int file_count_total = filename_vec.size();
 
-//  Frangi98 detector;
-  LiuYi13 detector;
+  StrokeFilter detector;
   double exec_time = (double) getTickCount();
   for (; it != filename_vec.end(); ++it, ++count) {
     if (it->compare("127.jpg") < 0) continue;

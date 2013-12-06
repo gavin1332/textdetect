@@ -9,8 +9,8 @@
 
 #include <opencv2/imgproc/imgproc.hpp>
 
-#include "utils/image/image.h"
-#include "utils/test/test.h"
+#include "image/image.h"
+#include "test/test.h"
 
 using namespace std;
 using namespace cv;

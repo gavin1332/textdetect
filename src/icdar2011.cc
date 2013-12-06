@@ -13,7 +13,7 @@
 #include <vector>
 #include <fstream>
 
-#include "utils/common/common.h"
+#include "common/common.h"
 
 using namespace std;
 

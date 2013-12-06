@@ -9,7 +9,7 @@
 
 #include <cmath>
 
-#include "utils/math/math.h"
+#include "math/math.h"
 
 using namespace std;
 
